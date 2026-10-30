@@ -1,0 +1,105 @@
+import fs from "node:fs";
+import path from "node:path";
+import { DatabaseSync } from "node:sqlite";
+import type { Action, CommandRecord, PlanEngine } from "./types";
+
+const DB_FILE = process.env.ZHANGDENG_DB || path.join(process.cwd(), "data", "zhangdeng.db");
+
+interface DbHandle {
+  db: DatabaseSync;
+}
+
+const globalStore = globalThis as unknown as { __zhangdengDb?: DbHandle | null };
+
+/** 懒加载 + 全局缓存；打不开就返回 null，页面照常能用，只是没有历史记录 */
+function connect(): DbHandle | null {
+  if (globalStore.__zhangdengDb !== undefined) return globalStore.__zhangdengDb;
+
+  try {
+    fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
+    const db = new DatabaseSync(DB_FILE);
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS commands (
+        id TEXT PRIMARY KEY,
+        created_at TEXT NOT NULL,
+        text TEXT NOT NULL,
+        reply TEXT NOT NULL,
+        engine TEXT NOT NULL,
+        actions TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_commands_created ON commands (created_at DESC);
+    `);
+    globalStore.__zhangdengDb = { db };
+    return globalStore.__zhangdengDb;
+  } catch (error) {
+    console.error("[zhangdeng] db init failed", error instanceof Error ? error.message : error);
+    globalStore.__zhangdengDb = null;
+    return null;
+  }
+}
+
+export function newCommandId(): string {
+  return `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+}
+
+export function saveCommand(input: {
+  id: string;
+  text: string;
+  reply: string;
+  engine: PlanEngine;
+  actions: Action[];
+}): boolean {
+  const handle = connect();
+  if (!handle) return false;
+  try {
+    handle.db
+      .prepare(
+        `INSERT INTO commands (id, created_at, text, reply, engine, actions)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        input.id,
+        new Date().toISOString(),
+        input.text,
+        input.reply,
+        input.engine,
+        JSON.stringify(input.actions),
+      );
+    return true;
+  } catch (error) {
+    console.error("[zhangdeng] db write failed", error instanceof Error ? error.message : error);
+    return false;
+  }
+}
+
+export function listCommands(limit = 12): CommandRecord[] {
+  const handle = connect();
+  if (!handle) return [];
+  try {
+    const rows = handle.db
+      .prepare(
+        `SELECT id, created_at, text, reply, engine, actions
+         FROM commands ORDER BY created_at DESC LIMIT ?`,
+      )
+      .all(limit) as {
+      id: string;
+      created_at: string;
+      text: string;
+      reply: string;
+      engine: string;
+      actions: string;
+    }[];
+
+    return rows.map((row) => ({
+      id: row.id,
+      createdAt: row.created_at,
+      text: row.text,
+      reply: row.reply,
+      engine: row.engine === "llm" ? "llm" : "local",
+      actions: JSON.parse(row.actions) as Action[],
+    }));
+  } catch (error) {
+    console.error("[zhangdeng] db read failed", error instanceof Error ? error.message : error);
+    return [];
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "zhangdeng",
+  "version": "1.0.0",
+  "private": true,
+  "description": "掌灯 · 一句话智能家居中控：自然语言 → 设备指令 → 实时房间",
+  "scripts": {
+    "dev": "next dev -p 3100",
+    "build": "next build",
+    "start": "next start -p 3100",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "next": "15.5.28",
+    "react": "19.1.10",
+    "react-dom": "19.1.10",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}
