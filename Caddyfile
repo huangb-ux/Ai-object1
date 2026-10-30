@@ -1,0 +1,10 @@
+# Caddy 反向代理 + 自动 HTTPS
+# DOMAIN 可以是域名（zhangdeng.top），也可以是 1.2.3.4.sslip.io 这种免费解析
+{$DOMAIN:localhost} {
+	encode zstd gzip
+	reverse_proxy app:3100
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}
