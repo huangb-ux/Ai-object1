@@ -2,6 +2,9 @@
   "name": "zhangdeng",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "description": "掌灯 · 一句话智能家居中控：自然语言 → 设备指令 → 实时房间",
   "scripts": {
     "dev": "next dev -p 3100",

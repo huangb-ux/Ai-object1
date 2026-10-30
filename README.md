@@ -139,11 +139,26 @@ pnpm typecheck   # tsc --noEmit
 pnpm build
 ```
 
-## 部署提醒
+## 部署到 Vercel（免费，推荐）
 
-- 页面和 API 都是 Node 运行时（`node:sqlite`），**不要部署到纯静态托管**。
-- Vercel 的函数文件系统是只读的：把 `ZHANGDENG_DB` 指到 `/tmp/zhangdeng.db` 即可运行，但历史不会跨实例保留；想要持久化就换成 Postgres 或 KV。
-- 状态存在进程内存里，单实例演示没问题；多实例需要把 `lib/house.ts` 的 runtime 换成 Redis。
+不需要信用卡，连上仓库后几分钟就有公网链接：
+
+1. 打开 [vercel.com](https://vercel.com)，用 **GitHub 账号**登录
+2. **Add New → Project** → 选择仓库 `huangb-ux/Ai-object1` → **Import**
+3. Framework 会自动识别成 Next.js，什么都不用改，直接 **Deploy**
+4. 等 1～2 分钟，拿到形如 `https://ai-object1.vercel.app` 的链接，手机也能打开
+5. （可选）**Settings → Environment Variables** 加 `LLM_API_KEY`，再 Redeploy 就会走大模型解析
+
+云端行为说明：
+
+- SQLite 会自动落到 `/tmp/zhangdeng.db`（云端文件系统只读，`lib/db.ts` 已自动兜底）
+- 屋子状态存在函数进程内存里，冷启动后会回到初始状态——演示够用，每次打开重新说一句话
+- 指令历史只在该实例存活期间保留，适合展示"指令落库"这一步
+
+其他注意：
+
+- 页面和 API 都是 Node 运行时（`node:sqlite`），**不要部署到 GitHub Pages 这类纯静态托管**。
+- 想换成持久化存储：把 `lib/db.ts` 换成 Postgres / KV，把 `lib/house.ts` 的 runtime 换成 Redis，其余代码不用动。
 
 ## 讲解材料
 
