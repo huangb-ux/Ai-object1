@@ -24,5 +24,3 @@ data/*.db-shm
 Thumbs.db
 *.log
 coverage/
-
-.vercel
