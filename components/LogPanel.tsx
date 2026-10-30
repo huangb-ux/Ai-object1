@@ -1,6 +1,6 @@
 "use client";
 
-import { DEVICE_MAP } from "@/lib/devices";
+import { deviceFullName } from "@/lib/devices";
 import type { CommandRecord } from "@/lib/types";
 
 interface LogPanelProps {
@@ -31,9 +31,7 @@ export default function LogPanel({ history }: LogPanelProps) {
               <div className="log-body">
                 <p className="log-text">{item.text}</p>
                 <p className="log-reply">
-                  {item.actions
-                    .map((action) => DEVICE_MAP.get(action.device)?.name ?? action.device)
-                    .join(" · ")}
+                  {item.actions.map((action) => deviceFullName(action.device)).join(" · ")}
                   {item.reply ? ` — ${item.reply}` : ""}
                 </p>
               </div>

@@ -20,7 +20,7 @@ describe("advice · 用电建议", () => {
   it("空调开得很低时提醒温度", () => {
     const state = withDevices((snapshot) => {
       snapshot.devices = snapshot.devices.map((device) =>
-        device.id === "ac" ? { ...device, on: true, target: 16 } : device,
+        device.id === "bedroom.ac" ? { ...device, on: true, target: 16 } : device,
       );
     });
     const list = adviceFor(state);
@@ -28,12 +28,32 @@ describe("advice · 用电建议", () => {
     expect(list.join(" ")).toContain("空调");
   });
 
-  it("全开的时候最多给三条", () => {
+  it("浴霸开着时会点名浴霸", () => {
+    const state = withDevices((snapshot) => {
+      snapshot.devices = snapshot.devices.map((device) =>
+        device.id === "bathroom.heater" ? { ...device, on: true, level: 2 } : device,
+      );
+    });
+    expect(adviceFor(state).join(" ")).toContain("浴霸");
+  });
+
+  it("冰箱单独待机时不报警", () => {
+    const state = withDevices((snapshot) => {
+      snapshot.devices = snapshot.devices.map((device) =>
+        device.id === "kitchen.fridge" ? { ...device, on: true } : { ...device, on: false },
+      );
+    });
+    const list = adviceFor(state);
+    expect(list).toHaveLength(1);
+    expect(list[0]).toContain("冰箱");
+  });
+
+  it("整屋开满的时候最多给三条", () => {
     const state = withDevices((snapshot) => {
       snapshot.devices = snapshot.devices.map((device) => ({
         ...device,
         on: true,
-        level: device.id === "curtain" ? 0 : 3,
+        level: device.id === "living.curtain" ? 0 : 3,
         target: 22,
       }));
     });

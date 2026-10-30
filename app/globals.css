@@ -416,6 +416,37 @@ a:hover {
   fill: rgba(255, 180, 84, 0.1);
 }
 
+/* 户型图上的字 */
+.plan-room {
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  fill: #ffca85;
+}
+
+.plan-w {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  fill: #8299ab;
+}
+
+.plan-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  fill: #7d93a7;
+}
+
+.plan-val {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- 面板通用 ---------- */
 
 .panel {
@@ -565,6 +596,49 @@ a:hover {
 
 /* ---------- 设备面板 ---------- */
 
+.dev-groups {
+  padding-bottom: 4px;
+}
+
+.dev-group + .dev-group {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.dev-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 18px 3px;
+}
+
+.dev-group-name {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--amber);
+}
+
+.dev-group-en {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+}
+
+.dev-group-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--mint);
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
 .dev-list {
   list-style: none;
   margin: 0;
@@ -579,6 +653,19 @@ a:hover {
   padding: 9px 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.045);
   transition: background 0.2s ease;
+}
+
+/* 分组之后，第一行不用再顶一条线 */
+.dev-group .dev-row:first-child {
+  border-top: 0;
+}
+
+.dev-group .dev-row {
+  padding: 7px 18px;
+}
+
+.dev-group .dev-row + .dev-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .dev-row.on {
@@ -736,6 +823,72 @@ a:hover {
   margin: 4px 0 0;
   font-size: 11px;
   color: var(--dim);
+}
+
+/* 按房间功率 */
+.room-bars {
+  list-style: none;
+  margin: 0;
+  padding: 6px 18px 8px;
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.room-bars-title {
+  margin: 10px 0 -2px;
+  padding: 0 18px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+}
+
+.room-bar {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: 10px;
+}
+
+.room-bar-name {
+  font-size: 11.5px;
+  color: #b8cad9;
+  white-space: nowrap;
+}
+
+/* 常驻暗槽：0 W 时也看得见轨道 */
+.room-bar-track {
+  position: relative;
+  display: block;
+  height: 6px;
+  border-radius: 2px;
+  background: #16232e;
+  border: 1px solid #243748;
+  overflow: hidden;
+}
+
+.room-bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 180, 84, 0.45), var(--amber));
+  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.room-bar-w {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: #93a9bb;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.room-bar.hot .room-bar-fill {
+  background: linear-gradient(90deg, rgba(87, 224, 176, 0.45), var(--mint));
+}
+
+.room-bar.hot .room-bar-w {
+  color: var(--mint);
 }
 
 .spark {

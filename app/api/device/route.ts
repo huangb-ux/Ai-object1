@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { setDevice } from "@/lib/house";
+import { DEVICE_IDS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const bodySchema = z.object({
-  id: z.enum(["light.ceiling", "lamp.floor", "tv", "fan", "ac", "curtain"]),
+  id: z.enum(DEVICE_IDS),
   on: z.boolean().optional(),
   level: z.number().optional(),
   target: z.number().optional(),

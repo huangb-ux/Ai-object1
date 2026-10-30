@@ -1,7 +1,7 @@
 "use client";
 
 import type { DeviceId, HouseSnapshot } from "@/lib/types";
-import { DEVICE_MAP } from "@/lib/devices";
+import { deviceFullName } from "@/lib/devices";
 
 interface IntentCardProps {
   state: HouseSnapshot | null;
@@ -36,7 +36,6 @@ export default function IntentCard({ state, result }: IntentCardProps) {
             <ul className="actions">
               {actions.map((raw, index) => {
                 const action = raw as { device: DeviceId; on?: boolean; level?: number; target?: number };
-                const def = DEVICE_MAP.get(action.device);
                 const params: string[] = [];
                 if (action.on !== undefined) params.push(`on=${action.on}`);
                 if (action.level !== undefined) params.push(`level=${action.level}`);
@@ -44,7 +43,7 @@ export default function IntentCard({ state, result }: IntentCardProps) {
                 return (
                   <li key={`${action.device}-${index}`} className="action-row">
                     <span className="action-index">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="action-dev">{def ? def.name : action.device}</span>
+                    <span className="action-dev">{deviceFullName(action.device)}</span>
                     <span className="action-param">{params.join(" ") || "toggle"}</span>
                   </li>
                 );

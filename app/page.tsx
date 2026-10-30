@@ -16,7 +16,7 @@ interface PlanView {
   engine: PlanEngine;
 }
 
-const EXAMPLES = ["我回家了", "把主灯调到 60%", "有点冷", "看电影", "全关"];
+const EXAMPLES = ["我回家了", "卧室灯打开", "书房空调调到 24 度", "厨房油烟机开到 2 档", "浴霸 2 档", "全关"];
 
 export default function Home() {
   const [state, setState] = useState<HouseSnapshot | null>(null);
@@ -138,10 +138,10 @@ export default function Home() {
       <section className="hero">
         <p className="eyebrow">UTTERANCE → INTENT → HOUSE</p>
         <h1>
-          一句话，<em>整间屋子</em>都应声而动。
+          一句话，<em>五个房间</em>都应声而动。
         </h1>
         <p className="lede">
-          对着屋子说一句中文，它先听懂你的意思，再把这句意思拆成一条条设备指令——先拉窗帘，再开灯，最后调空调。右边的屋子照着这份指令动，从解析到响应都能看见。
+          一套四居室、五个房间、十三台设备。说一句中文，它先听懂你的意思，再把这句意思拆成一条条设备指令——先拉窗帘，再开灯，最后调空调。客厅、主卧、书房、厨房、浴室照着这份指令依次动，从解析到响应都能看见。
         </p>
       </section>
 
@@ -162,12 +162,22 @@ export default function Home() {
 
       <main className="grid">
         <section className="stage">
-          <RoomView devices={state?.devices ?? []} clock={state?.clock ?? 0} onPick={setDevice} />
+          <RoomView
+            devices={state?.devices ?? []}
+            rooms={state?.rooms ?? []}
+            clock={state?.clock ?? 0}
+            onPick={setDevice}
+          />
           <IntentCard state={state} result={plan} />
         </section>
 
         <aside className="side">
-          <DevicePanel devices={state?.devices ?? []} activeId={activeId} onSet={setDevice} />
+          <DevicePanel
+            devices={state?.devices ?? []}
+            rooms={state?.rooms ?? []}
+            activeId={activeId}
+            onSet={setDevice}
+          />
           <EnergyPanel state={state} series={series} />
           <LogPanel history={history} />
         </aside>

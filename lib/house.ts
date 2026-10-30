@@ -1,20 +1,12 @@
-import { DEVICES, DEVICE_MAP } from "./devices";
-import type { Action, DeviceState, HouseSnapshot, ServerEvent } from "./types";
+import { DEVICES, DEVICE_MAP, initialDevices } from "./devices";
+import { ROOMS } from "./types";
+import type { Action, DeviceId, DeviceState, HouseSnapshot, RoomState, ServerEvent } from "./types";
 
 /** 模拟时钟从这里开始走：19:20，刚下班回家 */
 const START_CLOCK = 19 * 60 + 20;
 
 export function clamp(n: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, n));
-}
-
-function initialDevices(): DeviceState[] {
-  return DEVICES.map((def) => ({
-    id: def.id,
-    on: def.init.on,
-    level: def.init.level,
-    target: def.init.target,
-  }));
 }
 
 /** 单台设备当前功率（W） */
@@ -25,8 +17,12 @@ export function wattsOf(dev: DeviceState): number {
     case "light":
       return (def.watts * clamp(dev.level, 0, 100)) / 100;
     case "fan":
+      // 风扇、油烟机、浴霸都按档位比例出力（浴霸满档 1000W）
       return (def.watts * clamp(dev.level, 0, 3)) / 3;
     case "screen":
+      return def.watts;
+    case "plug":
+      // 冰箱、排气扇这类纯开关，开着就是满载
       return def.watts;
     case "ac":
       // 26 度为基准，设定温度每低 1 度多约 45W
@@ -38,6 +34,15 @@ export function wattsOf(dev: DeviceState): number {
 
 export function totalWatts(devices: DeviceState[]): number {
   return devices.reduce((sum, d) => sum + wattsOf(d), 0);
+}
+
+/** 按房间汇总功率，顺序跟 ROOMS 一致 */
+export function roomWatts(devices: DeviceState[]): RoomState[] {
+  return ROOMS.map((room) => ({
+    id: room.id,
+    name: room.name,
+    watts: Math.round(totalWatts(devices.filter((d) => d.room === room.id))),
+  }));
 }
 
 /** 把一条指令落到一台设备上，返回新状态（不修改入参，方便测试） */
@@ -79,8 +84,9 @@ export function applyAction(dev: DeviceState, action: Action): DeviceState {
   }
 
   if (def.kind === "screen" && on) level = 100;
+  if (def.kind === "plug" && on) level = 100;
 
-  return { id: dev.id, on, level, target };
+  return { id: dev.id, room: dev.room, on, level, target };
 }
 
 interface HouseRuntime {
@@ -91,7 +97,7 @@ interface HouseRuntime {
   timer: ReturnType<typeof setInterval> | null;
 }
 
-/** 单进程内存里的一间屋子。挂在 globalThis 上，热更新时状态不丢。 */
+/** 单进程内存里的一套房。挂在 globalThis 上，热更新时状态不丢。 */
 const globalStore = globalThis as unknown as { __zhangdeng?: HouseRuntime };
 
 function runtime(): HouseRuntime {
@@ -112,6 +118,7 @@ export function snapshot(): HouseSnapshot {
   const devices = s.devices.map((d) => ({ ...d }));
   return {
     devices,
+    rooms: roomWatts(devices),
     watts: Math.round(totalWatts(devices)),
     kwh: Number(s.kwh.toFixed(2)),
     clock: s.clock,
@@ -169,8 +176,8 @@ export function applyActions(actions: Action[], note?: string): HouseSnapshot {
 }
 
 /** 直接改一台设备，用于面板上的手动开关 */
-export function setDevice(id: string, patch: Partial<Action>): HouseSnapshot {
-  return applyActions([{ device: id as Action["device"], ...patch }]);
+export function setDevice(id: DeviceId, patch: Partial<Omit<Action, "device">>): HouseSnapshot {
+  return applyActions([{ device: id, ...patch }]);
 }
 
 export function resetHouse(): HouseSnapshot {
@@ -180,4 +187,9 @@ export function resetHouse(): HouseSnapshot {
   s.clock = START_CLOCK;
   broadcast({ type: "state", state: snapshot(), note: "已复位" });
   return snapshot();
+}
+
+/** 供 UI 用：整屋满载功率，画用电进度条 */
+export function fullOnWatts(): number {
+  return DEVICES.reduce((sum, def) => sum + def.watts, 0);
 }

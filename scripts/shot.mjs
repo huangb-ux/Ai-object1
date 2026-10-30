@@ -34,11 +34,16 @@ for (let i = 0; i < 80; i += 1) {
   await new Promise((resolve) => setTimeout(resolve, 250));
   const { result } = await send(
     "Runtime.evaluate",
-    { expression: "document.readyState + '|' + document.body.innerText.length", returnByValue: true },
+    {
+      expression:
+        "document.readyState + '|' + document.body.innerText.length + '|' + document.querySelectorAll('.dev-row').length + '|' + document.querySelectorAll('.scene-chip').length",
+      returnByValue: true,
+    },
     sessionId,
   );
-  const [ready, length] = String(result.value).split("|");
-  if (ready === "complete" && Number(length) > 400) break;
+  const [ready, length, rows, chips] = String(result.value).split("|");
+  // 等页面真正 hydrate 完（设备行与场景按钮都渲染出来）再截图
+  if (ready === "complete" && Number(length) > 400 && Number(rows) > 0 && Number(chips) > 0) break;
 }
 
 // 第五个参数 demo：点一下「我回家了」示例，让截图里带上解析结果
